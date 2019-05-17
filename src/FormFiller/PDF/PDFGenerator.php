@@ -3,7 +3,7 @@
 namespace FormFiller\PDF;
 
 use setasign\Fpdi\Fpdi;
-use FPDF;
+//use FPDF;
 
 /**
  * PDFGenerator
@@ -13,7 +13,7 @@ use FPDF;
 class PDFGenerator {
 
     /**
-     * @var FPDF $fpdf instance
+     * @var \TCPDF $fpdf instance
      */
     private $fpdf;
 
