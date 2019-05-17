@@ -1,5 +1,5 @@
 {
-    "name": "ghostfly/pdf-forms-filler",
+    "name": "andrewkarpich/pdf-forms-filler",
     "description": "Fill Acrobat forms easily using pure PHP ! 💪",
     "homepage": "https://github.com/Ghostfly/PDFFormsFiller",
     "keywords": ["php","pdf", "forms", "fill", "filler"],
