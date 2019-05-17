@@ -75,7 +75,8 @@ class PDFGenerator {
      * @throws \Exception
      */
     public function start(string $formPath, string $dest, string $fontName = 'Arial', string $fontSize = '12', string $fontStyle = 'B') {
-        $this->fpdf = new FPDF($this->orientation, $this->unit, $this->size);
+//        $this->fpdf = new FPDF($this->orientation, $this->unit, $this->size);
+        $this->fpdf = new \TCPDF($this->orientation, $this->unit, $this->size);
 
         $this->fpdf->SetMargins(10, 10, 10);
 
