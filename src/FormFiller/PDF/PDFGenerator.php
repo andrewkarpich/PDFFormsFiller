@@ -74,7 +74,7 @@ class PDFGenerator {
      * @return bool
      * @throws \Exception
      */
-    public function start(string $formPath, string $dest, string $fontName = 'Arial', string $fontSize = '12', string $fontStyle = 'B') {
+    public function start(string $formPath, string $dest, string $fontName = 'freesans', string $fontSize = '12', string $fontStyle = 'B') {
 //        $this->fpdf = new FPDF($this->orientation, $this->unit, $this->size);
         $this->fpdf = new \TCPDF($this->orientation, $this->unit, $this->size);
 
@@ -84,7 +84,7 @@ class PDFGenerator {
 
         $this->fpdf->AddPage();
 
-        $this->fpdf->AliasNbPages();
+//        $this->fpdf->AliasNbPages();
         $this->fpdf->SetFont($fontName, $fontStyle, $fontSize);
 
         $sizes = ['A3'     => 1190.55, 'A4' => 841.89, 'A5' => 595.28,
@@ -96,7 +96,7 @@ class PDFGenerator {
         // generated path
         $generated = getcwd() . "/tmp/temp.pdf";
 
-        $this->fpdf->Output("F", $generated, true);
+        $this->fpdf->Output($generated, "F");
 
         // merge original with our pdf
         $this->merge($formPath, $generated, $dest);
@@ -142,7 +142,7 @@ class PDFGenerator {
 
             // 20 is fpdf offset for new pages
             $offset = 20;
-            $this->fpdf->Cell($field->getWidth(), $field->getHeight() + $offset, utf8_decode($field->getValue()));
+            $this->fpdf->Cell($field->getWidth(), $field->getHeight() + $offset, $field->getValue());
         }
     }
 
