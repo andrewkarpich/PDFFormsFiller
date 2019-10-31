@@ -3,6 +3,7 @@
 namespace FormFiller\PDF;
 
 use setasign\Fpdi\Fpdi;
+
 //use FPDF;
 
 /**
@@ -51,12 +52,33 @@ class PDFGenerator {
      * @param string $unit
      * @param string $size
      */
-    public function __construct($fields, $data, $orientation = 'P', $unit = 'pt', $size = 'A4'){
-        $this->fields       = $fields;
-        $this->data         = $data;
-        $this->orientation  = $orientation;
-        $this->unit         = $unit;
-        $this->size         = $size;
+    public function __construct($fields, $data, $orientation = 'P', $unit = 'pt', $size = 'A4') {
+        $this->fields = $fields;
+        $this->data = $data;
+        $this->orientation = $orientation;
+        $this->unit = $unit;
+        $this->size = $size;
+    }
+
+    public static function combine(array $fields, $orientation = 'P', $unit = 'pt', $size = 'A4'): PDFGenerator {
+
+        $fieldsCoords = [];
+
+        foreach($fields as $key => $field){
+            $fieldsCoords[] = Field::fieldFromArray(
+                [ $key => [
+                    'llx'    => $field['x'],
+                    'lly'    => $field['y'],
+                    'width'  => $field['width'],
+                    'height' => $field['height'],
+                    'page'   => $field['page'] ?? 1,
+                    'urx'    => $field['x'] + $field['width'],
+                    'ury'    => $field['y'] + $field['height'],
+                ] ]
+            );
+        }
+
+        return new PDFGenerator($fieldsCoords, $fields, $orientation, $unit, $size);
     }
 
     /**
@@ -75,7 +97,7 @@ class PDFGenerator {
      * @throws \Exception
      */
     public function start(string $formPath, string $dest, string $fontName = 'freesans', string $fontSize = '12', string $fontStyle = 'B') {
-//        $this->fpdf = new FPDF($this->orientation, $this->unit, $this->size);
+        //        $this->fpdf = new FPDF($this->orientation, $this->unit, $this->size);
         $this->fpdf = new \TCPDF($this->orientation, $this->unit, $this->size);
 
         $this->fpdf->SetMargins(10, 10, 10);
@@ -84,14 +106,14 @@ class PDFGenerator {
 
         $this->fpdf->AddPage();
 
-//        $this->fpdf->AliasNbPages();
+        //        $this->fpdf->AliasNbPages();
         $this->fpdf->SetFont($fontName, $fontStyle, $fontSize);
 
-        $sizes = ['A3'     => 1190.55, 'A4' => 841.89, 'A5' => 595.28,
-                  'letter' => 792, 'legal' => 1008];
+        $sizes = [ 'A3'     => 1190.55, 'A4' => 841.89, 'A5' => 595.28,
+            'letter' => 792, 'legal' => 1008 ];
 
         // writing fields, if value not defined defaults to blank string
-        $this->writeFields($this->fields, $this->data, $sizes[$this->size]);
+        $this->writeFields($this->fields, $this->data, $sizes[ $this->size ]);
 
         // generated path
         $generated = getcwd() . "/tmp/temp.pdf";
@@ -111,10 +133,10 @@ class PDFGenerator {
      * Write fields on current pdf with data
      *
      * @param Field[] $fields
-     * @param array $data
+     * @param array   $data
      *
-     * @param int   $pageSize : 841.890 for A4
-     * @param int   $offset : 20 (fpdf default)
+     * @param int     $pageSize : 841.890 for A4
+     * @param int     $offset   : 20 (fpdf default)
      *
      * @return void
      * @throws \Exception
@@ -129,20 +151,21 @@ class PDFGenerator {
                 $this->fpdf->AddPage();
             }
 
-            $this->fpdf->SetFont($data[$field->getId()]['family'], $data[$field->getId()]['style'], $data[$field->getId()]['size']);
+            $this->fpdf->SetFont($data[ $field->getId() ]['family'] ?? 'Freesans', $data[ $field->getId() ]['style'] ?? '', $data[ $field->getId() ]['size'] ?? '12');
 
             // Set with good coords system.
             $this->fpdf->SetXY($field->getLlx(), PDFHelper::reverseYAxis($pageSize, $offset, $field->getLly()));
 
             // Write !
             if(array_key_exists($field->getId(), $data))
-                $field->setValue($data[$field->getId()]['value']);
+                $field->setValue($data[ $field->getId() ]['value']);
             else
                 $field->setValue("");
 
             // 20 is fpdf offset for new pages
             $offset = 20;
-            $this->fpdf->Cell($field->getWidth(), $field->getHeight() + $offset, $field->getValue());
+//                        $this->fpdf->Cell($field->getWidth(), $field->getHeight() + $offset, $field->getValue(), 0, 0, 'C', false, '', 0, false, 'T', 'T');
+            $this->fpdf->MultiCell($field->getWidth(), $field->getHeight() + $offset, $field->getValue(), 0, $data[ $field->getId() ]['align'] ?? 'L', false, 1, '', '', true, 0, false, true, $field->getHeight() + $offset, $data[ $field->getId() ]['vertical_align'] ?? 'M', false);
         }
     }
 
@@ -156,7 +179,7 @@ class PDFGenerator {
      *
      * @throws \Exception
      */
-    public function merge($pdfA, $pdfB, $dest) : bool {
+    public function merge($pdfA, $pdfB, $dest): bool {
         $pdf = new FPDI();
         $pageCount = $pdf->setSourceFile($pdfA);
 
@@ -184,7 +207,7 @@ class PDFGenerator {
              * @var FPDF $pdf
              */
             $pdf->Output("F", $dest, true);
-        } catch (\Exception $e){
+        } catch(\Exception $e){
             // Path not writable, probably
             return false;
         }
